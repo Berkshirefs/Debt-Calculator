@@ -85,9 +85,9 @@
         <div class="debt-clock">
             <h2>Program Savings</h2>
             <p>Weekly Payment: <span id="reduced-weekly-payment">$0.00</span></p>
-            <p>Total Weekly Savings: <span id="weekly-savings">$0.00</span></p>
+            <p>Total Weekly Savings: $<span id="weekly-savings">0.00</span></p>
             <p>Remaining Debt: $<span id="program-debt">0.00</span></p>
-            <p>Debt from Quoted Date: $<span id="program-quoted-debt">0.00</span></p>
+            <p>Debt at Current Date: $<span id="program-current-debt">0.00</span></p>
         </div>
         <div class="debt-clock">
             <h2>Total Payment Comparison</h2>
@@ -100,11 +100,14 @@
     <script>
         let currentDebt = 0;
         let programDebt = 0;
-        let programWeeklyPayment = 0;
+
         let currentWeeklyPayment = 0;
         let paymentFrequency = "weekly";
-        let programQuotedDebt = 0;
+
+        let programWeeklyPayment = 0;
+
         let interval;
+        let lastUpdateTime;
 
         function updatePaymentInputLabel() {
             const frequency = document.getElementById('payment-frequency').value;
@@ -133,12 +136,10 @@
                 weeklyPayment: parseFloat(document.getElementById('weekly-payment').value) || 0,
                 programSavingsAmount: parseFloat(document.getElementById('program-savings-amount').value) || 0,
                 programWeeklyPayment: parseFloat(document.getElementById('program-weekly-payment').value) || 0,
-                programStartDate: document.getElementById('program-start-date').value
+                programStartDate: document.getElementById('program-start-date').value,
             };
 
             localStorage.setItem(email, JSON.stringify(data));
-            programQuotedDebt = data.programSavingsAmount; // Set the quoted debt as the initial program savings amount
-            document.getElementById('program-quoted-debt').innerText = `$${programQuotedDebt.toFixed(2)}`;
             startCalculator();
         }
 
@@ -164,9 +165,6 @@
             document.getElementById('program-weekly-payment').value = data.programWeeklyPayment;
             document.getElementById('program-start-date').value = data.programStartDate;
 
-            programQuotedDebt = data.programSavingsAmount; // Retrieve the saved quoted debt
-            document.getElementById('program-quoted-debt').innerText = `$${programQuotedDebt.toFixed(2)}`;
-
             updatePaymentInputLabel();
             startCalculator();
         }
@@ -179,52 +177,42 @@
             programDebt = parseFloat(document.getElementById('program-savings-amount').value) || 0;
             programWeeklyPayment = parseFloat(document.getElementById('program-weekly-payment').value) || 0;
 
-            const programStartDate = new Date(document.getElementById('program-start-date').value);
-            const now = new Date();
-            const elapsedTime = Math.floor((now - programStartDate) / (1000 * 60 * 60 * 24));
+            const startDate = new Date(document.getElementById('program-start-date').value);
+            const today = new Date();
+            const elapsedTime = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
 
             const dailyPayment = paymentFrequency === "daily" ? currentWeeklyPayment / 5 : 0;
             const weeklyPayment = paymentFrequency === "weekly" ? currentWeeklyPayment : 0;
-
-            const totalWeeklyPayments = paymentFrequency === "daily" ? dailyPayment * 5 : weeklyPayment;
-            document.getElementById('weekly-business-payment').innerText = `$${totalWeeklyPayments.toFixed(2)}`;
 
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
 
             document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
+            document.getElementById('program-debt').innerText = programDebt.toFixed(2);
 
-            const weeklySavings = -programWeeklyPayment;
-            document.getElementById('weekly-savings').innerText = `$${weeklySavings.toFixed(2)}`;
+            const totalPaidSinceStart = elapsedTime * (paymentFrequency === "daily" ? dailyPayment : weeklyPayment);
+            const programPaidSinceStart = elapsedTime * (programWeeklyPayment / 7);
 
-            const totalPaid = (elapsedTime / 7) * weeklyPayment;
-            document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
-
-            const currentRemainingDebt = currentDebt - totalPaid;
-            document.getElementById('current-debt').innerText = currentRemainingDebt.toFixed(2);
-
-            const programRemainingDebt = programQuotedDebt - (elapsedTime / 7) * programWeeklyPayment;
-            document.getElementById('program-debt').innerText = programRemainingDebt.toFixed(2);
-
-            document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
+            document.getElementById('total-paid').innerText = totalPaidSinceStart.toFixed(2);
+            document.getElementById('program-current-debt').innerText = (programDebt - programPaidSinceStart).toFixed(2);
 
             clearInterval(interval);
+            lastUpdateTime = Date.now();
+
             interval = setInterval(() => {
-                const now = new Date();
-                const elapsedTime = Math.floor((now - programStartDate) / (1000 * 60 * 60 * 24));
+                const now = Date.now();
+                const elapsed = now - lastUpdateTime;
 
-                const totalPaid = (elapsedTime / 7) * weeklyPayment;
-                document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
+                if (paymentFrequency === "daily" && elapsed >= 24 * 3600 * 1000) {
+                    currentDebt = Math.max(currentDebt - dailyPayment, 0);
+                    lastUpdateTime = now;
+                }
 
-                const currentRemainingDebt = currentDebt - totalPaid;
-                document.getElementById('current-debt').innerText = currentRemainingDebt.toFixed(2);
+                if (paymentFrequency === "weekly" && elapsed >= 7 * 24 * 3600 * 1000) {
+                    currentDebt = Math.max(currentDebt - weeklyPayment, 0);
+                    lastUpdateTime = now;
+                }
 
-                const programRemainingDebt = programQuotedDebt - (elapsedTime / 7) * programWeeklyPayment;
-                document.getElementById('program-debt').innerText = programRemainingDebt.toFixed(2);
+                programDebt = Math.max(programDebt - programWeeklyPayment, 0);
 
-                document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
-            }, 1000);
-        }
-    </script>
-</body>
-</html>
+                document.getElementBy
