@@ -17,7 +17,7 @@
             flex-wrap: wrap;
         }
         .debt-clock {
-            width: 45%;
+            width: 30%;
             border: 1px solid #ccc;
             border-radius: 8px;
             padding: 20px;
@@ -65,6 +65,10 @@
             <input type="number" id="program-weekly-payment" placeholder="e.g., 2000">
         </div>
         <div>
+            <label for="program-start-date">Program Start Date: </label>
+            <input type="date" id="program-start-date">
+        </div>
+        <div>
             <button onclick="startCalculator()">Start Calculators</button>
         </div>
     </div>
@@ -82,6 +86,12 @@
             <p>Weekly Payment: <span id="reduced-weekly-payment">$0.00</span></p>
             <p>Total Weekly Savings: $<span id="weekly-savings">0.00</span></p>
             <p>Remaining Debt: $<span id="program-debt">0.00</span></p>
+        </div>
+        <div class="debt-clock">
+            <h2>Total Payment Comparison</h2>
+            <p>Total Paid Since Start Date: $<span id="total-paid">0.00</span></p>
+            <p>Total Savings If Enrolled: $<span id="total-savings">0.00</span></p>
+            <p>Elapsed Time: <span id="elapsed-time">0 days</span></p>
         </div>
     </div>
 
@@ -108,9 +118,15 @@
             programDebt = parseFloat(document.getElementById('program-loan-amount').value) || 0;
             programWeeklyPayment = parseFloat(document.getElementById('program-weekly-payment').value) || 0;
 
+            const startDate = new Date(document.getElementById('program-start-date').value);
+            const today = new Date();
+            const elapsedTime = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)); // Days elapsed
+
             // Calculate savings
             const totalDebtWithFactor = currentDebt * factorRate;
             const totalWeeklySavings = currentWeeklyPayment - programWeeklyPayment;
+            const totalPaid = elapsedTime * (paymentFrequency === "weekly" ? currentWeeklyPayment / 7 : currentWeeklyPayment);
+            const totalSavings = elapsedTime * totalWeeklySavings / (paymentFrequency === "weekly" ? 7 : 1);
 
             // Update UI with user inputs
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
@@ -121,6 +137,10 @@
             document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
             document.getElementById('weekly-savings').innerText = totalWeeklySavings.toFixed(2);
             document.getElementById('program-debt').innerText = programDebt.toFixed(2);
+
+            document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
+            document.getElementById('total-savings').innerText = totalSavings.toFixed(2);
+            document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
 
             // Clear previous interval
             clearInterval(interval);
