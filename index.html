@@ -187,6 +187,15 @@
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
 
+            document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
+            document.getElementById('program-debt').innerText = programDebt.toFixed(2);
+
+            const totalPaidSinceStart = elapsedTime * (paymentFrequency === "daily" ? dailyPayment : weeklyPayment);
+            const programPaidSinceStart = elapsedTime * (programWeeklyPayment / 7);
+
+            document.getElementById('total-paid').innerText = totalPaidSinceStart.toFixed(2);
+            document.getElementById('program-current-debt').innerText = (programDebt - programPaidSinceStart).toFixed(2);
+
             clearInterval(interval);
             lastUpdateTime = Date.now();
 
@@ -204,9 +213,6 @@
                     lastUpdateTime = now;
                 }
 
-                document.getElementById('current-debt').innerText = currentDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
-            }, 1000);
-        }
-    </script>
-</body>
-</html>
+                programDebt = Math.max(programDebt - programWeeklyPayment, 0);
+
+                document.getElementBy
