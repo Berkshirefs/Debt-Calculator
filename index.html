@@ -53,7 +53,7 @@
             <input type="number" id="weekly-payment" placeholder="e.g., 3500">
         </div>
         <div>
-            <label for="factor-rate">Factor Rate: </label>
+            <label for="factor-rate">Factor Rate (Visual Only): </label>
             <input type="number" id="factor-rate" placeholder="e.g., 1.45">
         </div>
         <div>
@@ -100,7 +100,6 @@
         let programDebt = 0;
 
         let currentWeeklyPayment = 0;
-        let factorRate = 0;
         let paymentFrequency = "weekly";
 
         let programWeeklyPayment = 0;
@@ -111,7 +110,6 @@
             // Get user inputs for current loan
             currentDebt = parseFloat(document.getElementById('loan-amount').value) || 0;
             currentWeeklyPayment = parseFloat(document.getElementById('weekly-payment').value) || 0;
-            factorRate = parseFloat(document.getElementById('factor-rate').value) || 1;
             paymentFrequency = document.getElementById('payment-frequency').value;
 
             // Get user inputs for program loan
@@ -123,7 +121,6 @@
             const elapsedTime = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)); // Days elapsed
 
             // Calculate savings
-            const totalDebtWithFactor = currentDebt * factorRate;
             const totalWeeklySavings = currentWeeklyPayment - programWeeklyPayment;
             const totalPaid = elapsedTime * (paymentFrequency === "weekly" ? currentWeeklyPayment / 7 : currentWeeklyPayment);
             const totalSavings = elapsedTime * totalWeeklySavings / (paymentFrequency === "weekly" ? 7 : 1);
@@ -131,8 +128,8 @@
             // Update UI with user inputs
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
-            document.getElementById('current-factor-rate').innerText = factorRate.toFixed(2);
-            document.getElementById('current-debt').innerText = totalDebtWithFactor.toFixed(2);
+            document.getElementById('current-factor-rate').innerText = document.getElementById('factor-rate').value || "N/A";
+            document.getElementById('current-debt').innerText = currentDebt.toFixed(2);
 
             document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
             document.getElementById('weekly-savings').innerText = totalWeeklySavings.toFixed(2);
@@ -147,7 +144,7 @@
 
             // Start countdowns
             interval = setInterval(() => {
-                updateDebtClock("current-debt", currentWeeklyPayment, totalDebtWithFactor);
+                updateDebtClock("current-debt", currentWeeklyPayment, currentDebt);
                 updateDebtClock("program-debt", programWeeklyPayment, programDebt);
             }, paymentFrequency === "weekly" ? 1000 : 142.86); // Adjust interval for daily vs weekly
         }
