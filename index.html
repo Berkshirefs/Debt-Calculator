@@ -107,6 +107,7 @@
         let programWeeklyPayment = 0;
 
         let interval;
+        let lastUpdateTime;
 
         function updatePaymentInputLabel() {
             const frequency = document.getElementById('payment-frequency').value;
@@ -187,17 +188,20 @@
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
 
             clearInterval(interval);
+            lastUpdateTime = Date.now();
 
             interval = setInterval(() => {
-                const now = new Date();
-                const secondsSinceStart = Math.floor((now - startDate) / 1000);
+                const now = Date.now();
+                const elapsed = now - lastUpdateTime;
 
-                if (paymentFrequency === "daily" && secondsSinceStart % (24 * 3600) === 0) {
+                if (paymentFrequency === "daily" && elapsed >= 24 * 3600 * 1000) {
                     currentDebt = Math.max(currentDebt - dailyPayment, 0);
+                    lastUpdateTime = now;
                 }
 
-                if (paymentFrequency === "weekly" && secondsSinceStart % (7 * 24 * 3600) === 0) {
+                if (paymentFrequency === "weekly" && elapsed >= 7 * 24 * 3600 * 1000) {
                     currentDebt = Math.max(currentDebt - weeklyPayment, 0);
+                    lastUpdateTime = now;
                 }
 
                 document.getElementById('current-debt').innerText = currentDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
