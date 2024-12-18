@@ -100,10 +100,14 @@
     <script>
         let currentDebt = 0;
         let programDebt = 0;
-        let programWeeklyPayment = 0;
+
         let currentWeeklyPayment = 0;
         let paymentFrequency = "weekly";
+
+        let programWeeklyPayment = 0;
+
         let interval;
+        let lastUpdateTime;
 
         function updatePaymentInputLabel() {
             const frequency = document.getElementById('payment-frequency').value;
@@ -132,7 +136,7 @@
                 weeklyPayment: parseFloat(document.getElementById('weekly-payment').value) || 0,
                 programSavingsAmount: parseFloat(document.getElementById('program-savings-amount').value) || 0,
                 programWeeklyPayment: parseFloat(document.getElementById('program-weekly-payment').value) || 0,
-                programStartDate: document.getElementById('program-start-date').value
+                programStartDate: document.getElementById('program-start-date').value,
             };
 
             localStorage.setItem(email, JSON.stringify(data));
@@ -173,9 +177,9 @@
             programDebt = parseFloat(document.getElementById('program-savings-amount').value) || 0;
             programWeeklyPayment = parseFloat(document.getElementById('program-weekly-payment').value) || 0;
 
-            const programStartDate = new Date(document.getElementById('program-start-date').value);
-            const now = new Date();
-            const elapsedTime = Math.floor((now - programStartDate) / (1000 * 60 * 60 * 24));
+            const startDate = new Date(document.getElementById('program-start-date').value);
+            const today = new Date();
+            const elapsedTime = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
 
             const dailyPayment = paymentFrequency === "daily" ? currentWeeklyPayment / 5 : 0;
             const weeklyPayment = paymentFrequency === "weekly" ? currentWeeklyPayment : 0;
@@ -187,23 +191,38 @@
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
 
             document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
+            document.getElementById('program-debt').innerText = programDebt.toFixed(2);
 
-            const weeklySavings = weeklyPayment - programWeeklyPayment;
-            document.getElementById('weekly-savings').innerText = `$${weeklySavings.toFixed(2)}`;
+            const totalPaidSinceStart = elapsedTime * (paymentFrequency === "daily" ? dailyPayment : weeklyPayment);
+            const programPaidSinceStart = elapsedTime * (programWeeklyPayment / 7);
 
-            const programRemainingDebt = programDebt - (elapsedTime / 7) * programWeeklyPayment;
-            document.getElementById('program-debt').innerText = programRemainingDebt.toFixed(2);
+            const totalSavings = totalPaidSinceStart - programPaidSinceStart;
 
+            document.getElementById('total-paid').innerText = totalPaidSinceStart.toFixed(2);
+            document.getElementById('total-savings').innerText = totalSavings.toFixed(2);
             document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
 
             clearInterval(interval);
-            interval = setInterval(() => {
-                const now = new Date();
-                const elapsedTime = Math.floor((now - programStartDate) / (1000 * 60 * 60 * 24));
+            lastUpdateTime = Date.now();
 
-                const programRemainingDebt = programDebt - (elapsedTime / 7) * programWeeklyPayment;
-                document.getElementById('program-debt').innerText = programRemainingDebt.toFixed(2);
-                document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
+            interval = setInterval(() => {
+                const now = Date.now();
+                const elapsed = now - lastUpdateTime;
+
+                if (paymentFrequency === "daily" && elapsed >= 24 * 3600 * 1000) {
+                    currentDebt = Math.max(currentDebt - dailyPayment, 0);
+                    lastUpdateTime = now;
+                }
+
+                if (paymentFrequency === "weekly" && elapsed >= 7 * 24 * 3600 * 1000) {
+                    currentDebt = Math.max(currentDebt - weeklyPayment, 0);
+                    lastUpdateTime = now;
+                }
+
+                programDebt = Math.max(programDebt - programWeeklyPayment, 0);
+
+                document.getElementById('current-debt').innerText = currentDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
+                document.getElementById('program-debt').innerText = programDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
             }, 1000);
         }
     </script>
