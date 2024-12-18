@@ -184,6 +184,9 @@
             const dailyPayment = paymentFrequency === "daily" ? currentWeeklyPayment / 5 : 0;
             const weeklyPayment = paymentFrequency === "weekly" ? currentWeeklyPayment : 0;
 
+            const totalWeeklyPayments = paymentFrequency === "daily" ? dailyPayment * 5 : weeklyPayment;
+            document.getElementById('weekly-business-payment').innerText = `$${totalWeeklyPayments.toFixed(2)}`;
+
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
 
@@ -215,4 +218,10 @@
 
                 programDebt = Math.max(programDebt - programWeeklyPayment, 0);
 
-                document.getElementBy
+                document.getElementById('current-debt').innerText = currentDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
+                document.getElementById('program-debt').innerText = programDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
