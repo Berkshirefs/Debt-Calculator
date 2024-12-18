@@ -200,13 +200,10 @@
             const totalPaid = (elapsedTime / 7) * weeklyPayment;
             document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
 
-            const totalSavings = (elapsedTime / 7) * (weeklyPayment - programWeeklyPayment);
-            document.getElementById('total-savings').innerText = totalSavings.toFixed(2);
-
             const currentRemainingDebt = currentDebt - totalPaid;
             document.getElementById('current-debt').innerText = currentRemainingDebt.toFixed(2);
 
-            const programRemainingDebt = programQuotedDebt - totalSavings;
+            const programRemainingDebt = programQuotedDebt - (elapsedTime / 7) * programWeeklyPayment;
             document.getElementById('program-debt').innerText = programRemainingDebt.toFixed(2);
 
             document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
@@ -219,13 +216,10 @@
                 const totalPaid = (elapsedTime / 7) * weeklyPayment;
                 document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
 
-                const totalSavings = (elapsedTime / 7) * (weeklyPayment - programWeeklyPayment);
-                document.getElementById('total-savings').innerText = totalSavings.toFixed(2);
-
                 const currentRemainingDebt = currentDebt - totalPaid;
                 document.getElementById('current-debt').innerText = currentRemainingDebt.toFixed(2);
 
-                const programRemainingDebt = programQuotedDebt - totalSavings;
+                const programRemainingDebt = programQuotedDebt - (elapsedTime / 7) * programWeeklyPayment;
                 document.getElementById('program-debt').innerText = programRemainingDebt.toFixed(2);
 
                 document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
