@@ -52,7 +52,7 @@
             <label id="payment-label" for="weekly-payment">Weekly Payment ($): </label>
             <input type="number" id="weekly-payment" placeholder="e.g., 3500">
         </div>
-                <div>
+        <div>
             <label for="program-savings-amount">Program Savings Amount ($): </label>
             <input type="number" id="program-savings-amount" placeholder="e.g., 20000">
         </div>
@@ -74,7 +74,7 @@
             <h2>Current Loan Terms</h2>
             <p>Payment Frequency: <span id="current-payment-frequency">Weekly</span></p>
             <p>Payment Amount: <span id="current-weekly-payment">$0.00</span></p>
-                        <p>Remaining Debt: $<span id="current-debt">0.00</span></p>
+            <p>Remaining Debt: $<span id="current-debt">0.00</span></p>
             <p id="weekly-payment-row" style="display: none;">Total Weekly Payment: $<span id="weekly-business-payment">0.00</span></p>
         </div>
         <div class="debt-clock">
@@ -100,7 +100,6 @@
         let paymentFrequency = "weekly";
 
         let programWeeklyPayment = 0;
-        let programSavingsAmount = 0;
 
         let interval; // To handle the calculators running
 
@@ -135,13 +134,12 @@
             // Calculate totals
             const dailyToWeekly = paymentFrequency === "daily" ? currentWeeklyPayment * 5 : currentWeeklyPayment;
             const totalSavingsPerWeek = dailyToWeekly - programWeeklyPayment;
-            const totalPaid = elapsedTime * (paymentFrequency === "weekly" ? currentWeeklyPayment / 7 : currentWeeklyPayment);
-            const totalSavings = elapsedTime * totalSavingsPerWeek / (paymentFrequency === "weekly" ? 1 : 7);
+            const totalPaid = elapsedTime * (paymentFrequency === "daily" ? currentWeeklyPayment : currentWeeklyPayment / 7);
+            const totalSavings = elapsedTime * (totalSavingsPerWeek / (paymentFrequency === "daily" ? 1 : 7));
 
             // Update UI with user inputs
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
-            document.getElementById('current-factor-rate').innerText = document.getElementById('factor-rate').value || "N/A";
             document.getElementById('current-debt').innerText = currentDebt.toFixed(2);
             document.getElementById('weekly-business-payment').innerText = `$${dailyToWeekly.toFixed(2)}`;
 
@@ -159,20 +157,21 @@
 
             // Start countdowns
             interval = setInterval(() => {
-                updateDebtClock("current-debt", currentWeeklyPayment, currentDebt);
-                updateDebtClock("program-debt", programWeeklyPayment, programDebt);
-            }, paymentFrequency === "weekly" ? 1000 : 142.86); // Adjust interval for daily vs weekly
+                const paymentAmount = paymentFrequency === "daily" ? currentWeeklyPayment / 5 : currentWeeklyPayment;
+                updateDebtClock("current-debt", paymentAmount, "current");
+                updateDebtClock("program-debt", programWeeklyPayment, "program");
+            }, 1000);
         }
 
-        function updateDebtClock(elementId, payment, debt) {
+        function updateDebtClock(elementId, payment, type) {
             const element = document.getElementById(elementId);
 
-            if (debt > 0) {
-                debt -= payment;
-                debt = Math.max(debt, 0); // Prevent negative debt
-                element.innerText = debt.toLocaleString(undefined, { minimumFractionDigits: 2 });
-            } else {
-                element.innerText = "Paid Off";
+            if (type === "current") {
+                currentDebt = Math.max(currentDebt - payment, 0);
+                element.innerText = currentDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            } else if (type === "program") {
+                programDebt = Math.max(programDebt - payment, 0);
+                element.innerText = programDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
             }
         }
     </script>
