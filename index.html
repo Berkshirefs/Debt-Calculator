@@ -34,49 +34,75 @@
 </head>
 <body>
     <h1>Debt Savings Calculator</h1>
+
     <div>
-        <label for="savings-input">Manually Enter Program Savings ($): </label>
-        <input type="number" id="savings-input" value="1500">
+        <h2>Manual Inputs</h2>
+        <div>
+            <label for="loan-amount">Loan Amount ($): </label>
+            <input type="number" id="loan-amount" placeholder="e.g., 100000">
+        </div>
+        <div>
+            <label for="weekly-payment">Weekly Payment ($): </label>
+            <input type="number" id="weekly-payment" placeholder="e.g., 3500">
+        </div>
+        <div>
+            <label for="interest-rate">Annual Interest Rate (%): </label>
+            <input type="number" id="interest-rate" placeholder="e.g., 45">
+        </div>
+        <div>
+            <label for="savings-input">Program Weekly Savings ($): </label>
+            <input type="number" id="savings-input" placeholder="e.g., 1500">
+        </div>
         <button onclick="startCalculator()">Start Calculators</button>
     </div>
 
     <div class="debt-container">
         <div class="debt-clock">
             <h2>Current Loan Terms</h2>
-            <p>Weekly Payment: $3,500</p>
-            <p>Interest Rate: 45%</p>
-            <p>Remaining Debt: $<span id="current-debt">100,000.00</span></p>
+            <p>Weekly Payment: <span id="current-weekly-payment">$0.00</span></p>
+            <p>Interest Rate: <span id="current-interest-rate">0%</span></p>
+            <p>Remaining Debt: $<span id="current-debt">0.00</span></p>
         </div>
         <div class="debt-clock">
             <h2>Program Savings</h2>
-            <p>Reduced Weekly Payment: <span id="reduced-payment">$0.00</span></p>
-            <p>Interest Rate Savings Applied</p>
-            <p>Remaining Debt: $<span id="program-debt">100,000.00</span></p>
+            <p>Reduced Weekly Payment: <span id="reduced-weekly-payment">$0.00</span></p>
+            <p>Remaining Debt: $<span id="program-debt">0.00</span></p>
         </div>
     </div>
 
     <script>
-        let currentDebt = 100000;
-        let programDebt = 100000;
+        let currentDebt = 0;
+        let programDebt = 0;
 
-        const currentWeeklyPayment = 3500;
-        const currentAnnualInterestRate = 0.45; // 45% APR
+        let currentWeeklyPayment = 0;
+        let currentAnnualInterestRate = 0;
 
-        let programWeeklyPayment; // To be calculated based on savings
+        let programWeeklyPayment = 0;
         let interval; // To handle the calculators running
 
         function startCalculator() {
-            // Get savings input
+            // Get user inputs
+            currentDebt = parseFloat(document.getElementById('loan-amount').value) || 0;
+            currentWeeklyPayment = parseFloat(document.getElementById('weekly-payment').value) || 0;
+            currentAnnualInterestRate = (parseFloat(document.getElementById('interest-rate').value) || 0) / 100;
+
             const savings = parseFloat(document.getElementById('savings-input').value) || 0;
             programWeeklyPayment = currentWeeklyPayment - savings;
-            document.getElementById('reduced-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
+            programDebt = currentDebt;
+
+            // Update UI with user inputs
+            document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
+            document.getElementById('current-interest-rate').innerText = `${(currentAnnualInterestRate * 100).toFixed(2)}%`;
+            document.getElementById('current-debt').innerText = currentDebt.toFixed(2);
+            document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
+            document.getElementById('program-debt').innerText = programDebt.toFixed(2);
 
             // Clear previous interval
             clearInterval(interval);
 
             // Calculate interest per week for both cases
             const currentInterestPerWeek = (currentDebt * currentAnnualInterestRate) / 52;
-            const programInterestPerWeek = (programDebt * (currentAnnualInterestRate - 0.1)) / 52; // Assume 10% less APR
+            const programInterestPerWeek = (programDebt * (currentAnnualInterestRate - 0.1)) / 52; // Assume 10% lower APR
 
             interval = setInterval(() => {
                 updateDebtClock(
@@ -100,8 +126,8 @@
             // Deduct weekly payment and add weekly interest
             let remainingDebt = parseFloat(element.innerText.replace(/,/g, ""));
             if (remainingDebt > 0) {
-                remainingDebt -= weeklyPayment;
-                remainingDebt += interestPerWeek;
+                remainingDebt -= weeklyPayment / 52; // Subtract payment portion per second
+                remainingDebt += interestPerWeek / 7; // Add interest portion per second
                 remainingDebt = Math.max(remainingDebt, 0); // Prevent negative debt
                 element.innerText = remainingDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
             } else {
