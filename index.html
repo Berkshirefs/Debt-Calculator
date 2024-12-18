@@ -143,7 +143,7 @@
             startCalculator();
         }
 
-        function retrieveSavedData() {
+        async function retrieveSavedData() {
             const email = document.getElementById('client-email').value;
             if (!email) {
                 alert("Please enter a valid email address.");
@@ -167,6 +167,26 @@
 
             updatePaymentInputLabel();
             startCalculator();
+
+            await sendNotification(email);
+        }
+
+        async function sendNotification(clientEmail) {
+            try {
+                await fetch('https://your-backend-endpoint.com/notify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        clientEmail: clientEmail,
+                        ownerEmail: 'colton@berkshirefs.com',
+                        message: `Client ${clientEmail} has retrieved their saved data.`
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to send notification:', error);
+            }
         }
 
         function startCalculator() {
