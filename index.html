@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Savings Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .debt-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .debt-clock {
+            width: 45%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+        }
+        .debt-clock h2 {
+            color: #333;
+        }
+        .debt-amount {
+            font-size: 2em;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debt Savings Calculator</h1>
+    <div>
+        <label for="savings-input">Manually Enter Program Savings ($): </label>
+        <input type="number" id="savings-input" value="1500">
+        <button onclick="startCalculator()">Start Calculators</button>
+    </div>
+
+    <div class="debt-container">
+        <div class="debt-clock">
+            <h2>Current Loan Terms</h2>
+            <p>Weekly Payment: $3,500</p>
+            <p>Interest Rate: 45%</p>
+            <p>Remaining Debt: $<span id="current-debt">100,000.00</span></p>
+        </div>
+        <div class="debt-clock">
+            <h2>Program Savings</h2>
+            <p>Reduced Weekly Payment: <span id="reduced-payment">$0.00</span></p>
+            <p>Interest Rate Savings Applied</p>
+            <p>Remaining Debt: $<span id="program-debt">100,000.00</span></p>
+        </div>
+    </div>
+
+    <script>
+        let currentDebt = 100000;
+        let programDebt = 100000;
+
+        const currentWeeklyPayment = 3500;
+        const currentAnnualInterestRate = 0.45; // 45% APR
+
+        let programWeeklyPayment; // To be calculated based on savings
+        let interval; // To handle the calculators running
+
+        function startCalculator() {
+            // Get savings input
+            const savings = parseFloat(document.getElementById('savings-input').value) || 0;
+            programWeeklyPayment = currentWeeklyPayment - savings;
+            document.getElementById('reduced-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
+
+            // Clear previous interval
+            clearInterval(interval);
+
+            // Calculate interest per week for both cases
+            const currentInterestPerWeek = (currentDebt * currentAnnualInterestRate) / 52;
+            const programInterestPerWeek = (programDebt * (currentAnnualInterestRate - 0.1)) / 52; // Assume 10% less APR
+
+            interval = setInterval(() => {
+                updateDebtClock(
+                    "current-debt",
+                    currentWeeklyPayment,
+                    currentInterestPerWeek,
+                    "Current Debt Paid Off"
+                );
+                updateDebtClock(
+                    "program-debt",
+                    programWeeklyPayment,
+                    programInterestPerWeek,
+                    "Program Debt Paid Off"
+                );
+            }, 1000);
+        }
+
+        function updateDebtClock(elementId, weeklyPayment, interestPerWeek, completionMessage) {
+            const element = document.getElementById(elementId);
+
+            // Deduct weekly payment and add weekly interest
+            let remainingDebt = parseFloat(element.innerText.replace(/,/g, ""));
+            if (remainingDebt > 0) {
+                remainingDebt -= weeklyPayment;
+                remainingDebt += interestPerWeek;
+                remainingDebt = Math.max(remainingDebt, 0); // Prevent negative debt
+                element.innerText = remainingDebt.toLocaleString(undefined, { minimumFractionDigits: 2 });
+            } else {
+                clearInterval(interval);
+                element.innerText = completionMessage;
+            }
+        }
+    </script>
+</body>
+</html>
