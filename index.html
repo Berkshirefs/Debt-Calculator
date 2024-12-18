@@ -196,8 +196,11 @@
             const totalPaidSinceStart = elapsedTime * (paymentFrequency === "daily" ? dailyPayment : weeklyPayment);
             const programPaidSinceStart = elapsedTime * (programWeeklyPayment / 7);
 
+            const totalSavings = totalPaidSinceStart - programPaidSinceStart;
+
             document.getElementById('total-paid').innerText = totalPaidSinceStart.toFixed(2);
-            document.getElementById('program-current-debt').innerText = (programDebt - programPaidSinceStart).toFixed(2);
+            document.getElementById('total-savings').innerText = totalSavings.toFixed(2);
+            document.getElementById('elapsed-time').innerText = `${elapsedTime} days`;
 
             clearInterval(interval);
             lastUpdateTime = Date.now();
