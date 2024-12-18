@@ -81,8 +81,8 @@
             <h2>Program Savings</h2>
             <p>Weekly Payment: <span id="reduced-weekly-payment">$0.00</span></p>
             <p>Total Weekly Savings: $<span id="weekly-savings">0.00</span></p>
-            <p>Total Savings: $<span id="total-program-savings">0.00</span></p>
             <p>Remaining Debt: $<span id="program-debt">0.00</span></p>
+            <p>Debt at Current Date: $<span id="program-current-debt">0.00</span></p>
         </div>
         <div class="debt-clock">
             <h2>Total Payment Comparison</h2>
@@ -137,6 +137,10 @@
             const totalPaid = elapsedTime * (paymentFrequency === "daily" ? currentWeeklyPayment : currentWeeklyPayment / 7);
             const totalSavings = elapsedTime * (totalSavingsPerWeek / (paymentFrequency === "daily" ? 1 : 7));
 
+            // Update live debt amounts
+            const currentDebtAtDate = currentDebt - totalPaid;
+            const programDebtAtDate = programDebt - (programWeeklyPayment * Math.floor(elapsedTime / 7));
+
             // Update UI with user inputs
             document.getElementById('current-payment-frequency').innerText = paymentFrequency.charAt(0).toUpperCase() + paymentFrequency.slice(1);
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
@@ -145,8 +149,8 @@
 
             document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
             document.getElementById('weekly-savings').innerText = totalSavingsPerWeek.toFixed(2);
-            document.getElementById('total-program-savings').innerText = `$${programDebt.toFixed(2)}`;
             document.getElementById('program-debt').innerText = programDebt.toFixed(2);
+            document.getElementById('program-current-debt').innerText = programDebtAtDate.toFixed(2);
 
             document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
             document.getElementById('total-savings').innerText = totalSavings.toFixed(2);
