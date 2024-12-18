@@ -38,8 +38,8 @@
     <div>
         <h2>Manual Inputs</h2>
         <div>
-            <label for="loan-amount">Loan Amount ($): </label>
-            <input type="number" id="loan-amount" placeholder="e.g., 100000">
+            <label for="loan-amount">Debt Remaining ($): </label>
+            <input type="number" id="debt-remaining" placeholder="e.g., 100000">
         </div>
         <div>
             <label for="payment-frequency">Payment Frequency: </label>
@@ -57,8 +57,8 @@
             <input type="number" id="factor-rate" placeholder="e.g., 1.45">
         </div>
         <div>
-            <label for="program-loan-amount">Program Loan Amount ($): </label>
-            <input type="number" id="program-loan-amount" placeholder="e.g., 100000">
+            <label for="program-savings-amount">Program Savings Amount ($): </label>
+            <input type="number" id="program-savings-amount" placeholder="e.g., 20000">
         </div>
         <div>
             <label for="program-weekly-payment">Program Weekly Payment ($): </label>
@@ -80,11 +80,13 @@
             <p>Payment Amount: <span id="current-weekly-payment">$0.00</span></p>
             <p>Factor Rate: <span id="current-factor-rate">0</span></p>
             <p>Remaining Debt: $<span id="current-debt">0.00</span></p>
+            <p>Total Weekly Payment (Business Days): $<span id="weekly-business-payment">0.00</span></p>
         </div>
         <div class="debt-clock">
             <h2>Program Savings</h2>
             <p>Weekly Payment: <span id="reduced-weekly-payment">$0.00</span></p>
             <p>Total Weekly Savings: $<span id="weekly-savings">0.00</span></p>
+            <p>Total Savings: $<span id="total-program-savings">0.00</span></p>
             <p>Remaining Debt: $<span id="program-debt">0.00</span></p>
         </div>
         <div class="debt-clock">
@@ -103,6 +105,7 @@
         let paymentFrequency = "weekly";
 
         let programWeeklyPayment = 0;
+        let programSavingsAmount = 0;
 
         let interval; // To handle the calculators running
 
@@ -112,16 +115,17 @@
             currentWeeklyPayment = parseFloat(document.getElementById('weekly-payment').value) || 0;
             paymentFrequency = document.getElementById('payment-frequency').value;
 
-            // Get user inputs for program loan
-            programDebt = parseFloat(document.getElementById('program-loan-amount').value) || 0;
+            // Get user inputs for program
+            programDebt = parseFloat(document.getElementById('program-savings-amount').value) || 0;
             programWeeklyPayment = parseFloat(document.getElementById('program-weekly-payment').value) || 0;
 
             const startDate = new Date(document.getElementById('program-start-date').value);
             const today = new Date();
             const elapsedTime = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)); // Days elapsed
 
-            // Calculate savings
+            // Calculate totals
             const totalWeeklySavings = currentWeeklyPayment - programWeeklyPayment;
+            const weeklyBusinessPayment = paymentFrequency === "daily" ? currentWeeklyPayment * 5 / 7 : currentWeeklyPayment;
             const totalPaid = elapsedTime * (paymentFrequency === "weekly" ? currentWeeklyPayment / 7 : currentWeeklyPayment);
             const totalSavings = elapsedTime * totalWeeklySavings / (paymentFrequency === "weekly" ? 7 : 1);
 
@@ -130,9 +134,11 @@
             document.getElementById('current-weekly-payment').innerText = `$${currentWeeklyPayment.toFixed(2)}`;
             document.getElementById('current-factor-rate').innerText = document.getElementById('factor-rate').value || "N/A";
             document.getElementById('current-debt').innerText = currentDebt.toFixed(2);
+            document.getElementById('weekly-business-payment').innerText = `$${weeklyBusinessPayment.toFixed(2)}`;
 
             document.getElementById('reduced-weekly-payment').innerText = `$${programWeeklyPayment.toFixed(2)}`;
             document.getElementById('weekly-savings').innerText = totalWeeklySavings.toFixed(2);
+            document.getElementById('total-program-savings').innerText = `$${programDebt.toFixed(2)}`;
             document.getElementById('program-debt').innerText = programDebt.toFixed(2);
 
             document.getElementById('total-paid').innerText = totalPaid.toFixed(2);
